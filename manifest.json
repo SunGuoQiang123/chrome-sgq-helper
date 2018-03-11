@@ -1,0 +1,26 @@
+{
+    "manifest_version": 2,
+    "name": "sgq",
+    "version": "0.0.1",
+    "description": "sgq useful helper",
+    "icons": {
+        "16": "icons/S.png",
+        "48": "icons/S.png",
+        "64": "icons/S.png",
+        "128": "icons/S.png"
+    },
+    "author": "sunguoqiang",
+    "permissions": [
+        "contextMenus","tabs"
+    ],
+    "options_page":"view/options.html",
+    "browser_action": {
+        "default_icon": "icons/S.png",
+        "default_popup": "view/popup.html",
+        "default_title": "useful search"
+    },
+    "background": {
+        "scripts": ["js/background.js"]
+    },
+    "omnibox": {"keyword": "sgq"}
+}
