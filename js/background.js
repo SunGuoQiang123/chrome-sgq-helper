@@ -3,40 +3,30 @@ const cateItems = {
     movie: ['猫眼搜索', '豆瓣搜索'],
     code: ['github搜索', 'stackoverflow搜索']
 }
+let searchWord = ''
 
 chrome.omnibox.onInputChanged.addListener((text, suggest) => {
     console.log('input change is ', text);
-    let searchInfo = getSearchInfo(text);
-    searchInfo && showSuggestionList(searchInfo, suggest)
-    // if (text.startsWith('movie')){
-    //     suggest([
-    //         // {content:'毒蛇', description: '打开毒蛇或用毒蛇搜索'},
-    //         {content:'豆瓣搜索'+text.slice(6), description: '豆瓣搜索'+text.slice(6)},
-    //         {content:'猫眼搜索'+text.slice(6), description: '猫眼搜索'+text.slice(6)}
-    //     ])
-    // } else if(text.startsWith('code')) {
-    //     suggest([
-    //         {content:'github搜索' + text.slice(5), description: 'github搜索' + text.slice(5)}
-    //     ])
-    // }
+    let cate = getSearchInfo(text);
+    cate && showSuggestionList(cate, suggest)
 })
 
-function getServerCate(text) {
+function getSearchInfo (text) {
     if (!text) {
         return;
     }
-    text = text.toLowerCase();
+    text = text.toLowerCase().trim();
     let cate = cateList.find(cate => text.startsWith(cate));
-    let keyword = text.slice(cate.length);
-    return cate ? {cate, keyword} : void 0;
+    searchWord = cate ? text.slice(cate.length).trim() : '';
+    return cate;
 }
 
-function showSuggestionList(searchInfo, suggest) {
+function showSuggestionList(cate, suggest) {
     for (key in cateItems) {
         if (cateItems.hasOwnProperty(key)) {
-            if (key === searchInfo.cate) {
+            if (key === cate) {
                 suggest(cateItems[key].map(item => {
-                    let displayContent = item + searchInfo.keyword;
+                    let displayContent = item + searchWord;
                     return {content: displayContent, description: displayContent}
                 }))
             }
@@ -48,17 +38,13 @@ chrome.omnibox.onInputEntered.addListener((text) => {
     console.log('input entered is ', text);
     var href = '';
     if (text.startsWith('豆瓣')) {
-        text = text.slice(4);
-        href = 'https://movie.douban.com/subject_search?search_text=' + text + '&cat=1002';
+        href = 'https://movie.douban.com/subject_search?search_text=' + searchWord + '&cat=1002';
     } else if (text.startsWith('猫眼')) {
-        text = text.slice(4);
-        href = "http://maoyan.com/query?kw=" + text;
+        href = "http://maoyan.com/query?kw=" + searchWord;
     } else if (text.startsWith('github')) {
-        text = text.slice(8);
-        href = "https://github.com/search?utf8=%E2%9C%93&q=" + text;
+        href = "https://github.com/search?utf8=%E2%9C%93&q=" + searchWord;
     } else if (text.startsWith('stackoverflow')) {
-        text = text.slice(15);
-        href = 'https://stackoverflow.com/search?q=' + text;
+        href = 'https://stackoverflow.com/search?q=' + searchWord;
     }
     openUrlCurrentTab(href)
 })
