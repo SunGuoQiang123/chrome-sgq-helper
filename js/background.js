@@ -5,6 +5,14 @@ const cateItems = {
 }
 let searchWord = ''
 
+const default_url = _.template('https://www.baidu.com/s?ie=UTF-8&wd=${value}');
+let site_urls = {
+    '豆瓣': _.template('https://movie.douban.com/subject_search?search_text=${value}&cat=1002'),
+    '猫眼': _.template('http://maoyan.com/query?kw=${value}'),
+    'github': _.template('https://github.com/search?utf8=%E2%9C%93&q=${value}'),
+    'stackoverflow': _.template('https://stackoverflow.com/search?q=${value}')
+}
+
 chrome.omnibox.onInputChanged.addListener((text, suggest) => {
     console.log('input change is ', text);
     let cate = getSearchInfo(text);
@@ -37,17 +45,18 @@ function showSuggestionList(cate, suggest) {
 chrome.omnibox.onInputEntered.addListener((text) => {
     console.log('input entered is ', text);
     var href = '';
-    if (text.startsWith('豆瓣')) {
-        href = 'https://movie.douban.com/subject_search?search_text=' + searchWord + '&cat=1002';
-    } else if (text.startsWith('猫眼')) {
-        href = "http://maoyan.com/query?kw=" + searchWord;
-    } else if (text.startsWith('github')) {
-        href = "https://github.com/search?utf8=%E2%9C%93&q=" + searchWord;
-    } else if (text.startsWith('stackoverflow')) {
-        href = 'https://stackoverflow.com/search?q=' + searchWord;
+    for (key in site_urls) {
+        if (site_urls.hasOwnProperty(key) && text.startsWith(key)) {
+             href = site_urls[key]({'value': searchWord})
+        }
     }
-    openUrlCurrentTab(href)
+    // openUrlNewTab(href ? href : default_url({'value': searchWord}));
+    openUrlCurrentTab(href ? href : default_url({'value': searchWord}))
 })
+
+function openUrlNewTab(url) {
+    chrome.tabs.create({url: url})
+}
 
 function getCurrentTabId(callback) {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
